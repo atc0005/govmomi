@@ -25,6 +25,7 @@ import (
 
 	"github.com/vmware/govmomi/govc/cli"
 	"github.com/vmware/govmomi/govc/flags"
+	"github.com/vmware/govmomi/units"
 	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/types"
 )
@@ -147,7 +148,7 @@ func (cmd *tree) Run(ctx context.Context, f *flag.FlagSet) error {
 
 	var o mo.VirtualMachine
 
-	err = vm.Properties(ctx, vm.Reference(), []string{"snapshot"}, &o)
+	err = vm.Properties(ctx, vm.Reference(), []string{"snapshot", "layoutEx"}, &o)
 	if err != nil {
 		return err
 	}
@@ -161,6 +162,8 @@ func (cmd *tree) Run(ctx context.Context, f *flag.FlagSet) error {
 	}
 
 	cmd.info = o.Snapshot
+	size := SnapshotSize(o.Snapshot, nil, o.LayoutEx, true)
+	fmt.Printf("size=%s\n", units.ByteSize(size))
 
 	cmd.write(0, "", o.Snapshot.RootSnapshotList)
 
