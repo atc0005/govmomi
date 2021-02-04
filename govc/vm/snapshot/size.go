@@ -42,50 +42,32 @@ func removeKey(l *[]int, key int) {
 }
 
 func SnapshotSize(info types.ManagedObjectReference, parent *types.ManagedObjectReference, vmlayout *types.VirtualMachineFileLayoutEx, isCurrent bool) int {
-
-	// flat list of diskDescriptor, diskExtent values
 	var fileKeyList []int
-
-	// files associated with parent snapshot only
 	var parentFiles []int
-
-	// all snapshot files, regardless of whether snapshot has a parent
 	var allSnapshotFiles []int
 
 	diskFiles := extractDiskLayoutFiles(vmlayout.Disk)
 
-	// vmlayout.Snapshot == Layout of each snapshot of the virtual machine.
 	for _, layout := range vmlayout.Snapshot {
 		diskLayout := extractDiskLayoutFiles(layout.Disk)
-
 		allSnapshotFiles = append(allSnapshotFiles, diskLayout...)
 
-		// if the layout MOID matches active snapshot MOID
 		if layout.Key.Value == info.Value {
-
-			// gather file keys if snapshot is current
 			fileKeyList = append(fileKeyList, int(layout.DataKey)) // The .vmsn file
 			fileKeyList = append(fileKeyList, diskLayout...)       // The .vmdk files
-
-			// if there is a parent, and the MOID for the parent matches the
-			// MOID of the layout we are looking at
 		} else if parent != nil && layout.Key.Value == parent.Value {
 			parentFiles = append(parentFiles, diskLayout...)
 		}
 	}
 
-	// remove file keys associated with parent snapshot
 	for _, parentFile := range parentFiles {
 		removeKey(&fileKeyList, parentFile)
 	}
 
-	// remove all snapshot files from the list associated with the VM itself
 	for _, file := range allSnapshotFiles {
 		removeKey(&diskFiles, file)
 	}
 
-	// build a map of vm.LayoutEx.File.Key to vm.LayoutEx.File to make
-	// retrieving the size for a specific file easier later
 	fileKeyMap := make(map[int]types.VirtualMachineFileLayoutExFileInfo)
 	for _, file := range vmlayout.File {
 		fileKeyMap[int(file.Key)] = file
@@ -102,8 +84,6 @@ func SnapshotSize(info types.ManagedObjectReference, parent *types.ManagedObject
 		}
 	}
 
-	// if the snapshot is active, add up all associated disk files not
-	// directly associated with the snapshot layout
 	if isCurrent {
 		for _, diskFile := range diskFiles {
 			file := fileKeyMap[diskFile]
