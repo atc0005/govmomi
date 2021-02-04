@@ -39,8 +39,7 @@ func removeKey(l *[]int, key int) {
 */
 func SnapshotSize(
 
-	// info == vm.Snapshot
-	info *types.VirtualMachineSnapshotInfo,
+	info types.ManagedObjectReference,
 
 	// this function cannot be expected to process a snapshot tree. Instead,
 	// something else looks at the tree and calls this for each snapshot. This
@@ -73,7 +72,7 @@ func SnapshotSize(
 
 		// if the layout MOID matches active snapshot MOID
 		// Q: Why match on this? Is this because the snapshot is growing?
-		if layout.Key.Value == info.CurrentSnapshot.Value {
+		if layout.Key.Value == info.Value {
 
 			// gather file keys if snapshot is current?
 			fileKeyList = append(fileKeyList, int(layout.DataKey)) // The .vmsn file

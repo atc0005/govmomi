@@ -39,8 +39,10 @@ type tree struct {
 	description bool
 	fullPath    bool
 	id          bool
+	size        bool
 
-	info *types.VirtualMachineSnapshotInfo
+	info   *types.VirtualMachineSnapshotInfo
+	layout *types.VirtualMachineFileLayoutEx
 }
 
 func init() {
@@ -60,6 +62,7 @@ func (cmd *tree) Register(ctx context.Context, f *flag.FlagSet) {
 	f.BoolVar(&cmd.fullPath, "f", false,
 		"Print the full path prefix for snapshot")
 	f.BoolVar(&cmd.id, "i", false, "Print the snapshot id")
+	f.BoolVar(&cmd.size, "s", false, "Print the snapshot size")
 }
 
 func (cmd *tree) Description() string {
@@ -79,7 +82,7 @@ func (cmd *tree) Process(ctx context.Context) error {
 	return nil
 }
 
-func (cmd *tree) write(level int, parent string, st []types.VirtualMachineSnapshotTree) {
+func (cmd *tree) write(level int, parent string, pref *types.ManagedObjectReference, st []types.VirtualMachineSnapshotTree) {
 	for _, s := range st {
 		sname := s.Name
 
@@ -93,7 +96,10 @@ func (cmd *tree) write(level int, parent string, st []types.VirtualMachineSnapsh
 			names = append(names, sname)
 		}
 
+		isCurrent := false
+
 		if s.Snapshot == *cmd.info.CurrentSnapshot {
+			isCurrent = true
 			if cmd.current {
 				names = append(names, ".")
 			} else if cmd.currentName {
@@ -105,6 +111,12 @@ func (cmd *tree) write(level int, parent string, st []types.VirtualMachineSnapsh
 		for _, name := range names {
 			var attr []string
 			var meta string
+
+			if cmd.size {
+				size := SnapshotSize(s.Snapshot, pref, cmd.layout, isCurrent)
+
+				attr = append(attr, units.ByteSize(size).String())
+			}
 
 			if cmd.id {
 				attr = append(attr, s.Snapshot.Value)
@@ -128,7 +140,7 @@ func (cmd *tree) write(level int, parent string, st []types.VirtualMachineSnapsh
 			}
 		}
 
-		cmd.write(level+2, sname, s.ChildSnapshotList)
+		cmd.write(level+2, sname, &s.Snapshot, s.ChildSnapshotList)
 	}
 }
 
@@ -162,10 +174,11 @@ func (cmd *tree) Run(ctx context.Context, f *flag.FlagSet) error {
 	}
 
 	cmd.info = o.Snapshot
-	size := SnapshotSize(o.Snapshot, nil, o.LayoutEx, true)
+	cmd.layout = o.LayoutEx
+	size := SnapshotSize(o.Reference(), nil, o.LayoutEx, true)
 	fmt.Printf("size=%s\n", units.ByteSize(size))
 
-	cmd.write(0, "", o.Snapshot.RootSnapshotList)
+	cmd.write(0, "", nil, o.Snapshot.RootSnapshotList)
 
 	return nil
 }
