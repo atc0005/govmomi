@@ -175,8 +175,12 @@ func (cmd *tree) Run(ctx context.Context, f *flag.FlagSet) error {
 
 	cmd.info = o.Snapshot
 	cmd.layout = o.LayoutEx
-	size := SnapshotSize(o.Reference(), nil, o.LayoutEx, true)
-	fmt.Printf("size=%s\n", units.ByteSize(size))
+
+	// @dougm: This was in the original code snippets shared, but I assume
+	// isn't desired in a final PR?
+	//
+	// size := SnapshotSize(o.Reference(), nil, o.LayoutEx, true)
+	// fmt.Printf("size=%s\n", units.ByteSize(size))
 
 	cmd.write(0, "", nil, o.Snapshot.RootSnapshotList)
 
