@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016 VMware, Inc. All Rights Reserved.
+Copyright (c) 2021 VMware, Inc. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -175,12 +175,6 @@ func (cmd *tree) Run(ctx context.Context, f *flag.FlagSet) error {
 
 	cmd.info = o.Snapshot
 	cmd.layout = o.LayoutEx
-
-	// @dougm: This was in the original code snippets shared, but I assume
-	// isn't desired in a final PR?
-	//
-	// size := SnapshotSize(o.Reference(), nil, o.LayoutEx, true)
-	// fmt.Printf("size=%s\n", units.ByteSize(size))
 
 	cmd.write(0, "", nil, o.Snapshot.RootSnapshotList)
 
