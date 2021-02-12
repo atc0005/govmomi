@@ -25,6 +25,7 @@ import (
 
 	"github.com/vmware/govmomi/govc/cli"
 	"github.com/vmware/govmomi/govc/flags"
+	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/units"
 	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/types"
@@ -113,7 +114,7 @@ func (cmd *tree) write(level int, parent string, pref *types.ManagedObjectRefere
 			var meta string
 
 			if cmd.size {
-				size := SnapshotSize(s.Snapshot, pref, cmd.layout, isCurrent)
+				size := object.SnapshotSize(s.Snapshot, pref, cmd.layout, isCurrent)
 
 				attr = append(attr, units.ByteSize(size).String())
 			}
