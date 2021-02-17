@@ -657,9 +657,9 @@ func (m snapshotMap) add(parent string, tree []types.VirtualMachineSnapshotTree)
 }
 
 // SnapshotSize calculates the size of a given snapshot in bytes. If the
-// snapshot is current, also calculate the size of disk files not associated
-// with any parent snapshot in size calculations. This allows for measuring
-// and including the growth from the last fixed snapshot to the present state.
+// snapshot is current, disk files not associated with any parent snapshot are
+// included in size calculations. This allows for measuring and including the
+// growth from the last fixed snapshot to the present state.
 func SnapshotSize(info types.ManagedObjectReference, parent *types.ManagedObjectReference, vmlayout *types.VirtualMachineFileLayoutEx, isCurrent bool) int {
 	var fileKeyList []int
 	var parentFiles []int
